@@ -1,5 +1,7 @@
 import { subscribe } from "./lcu.js";
 
+const BRIDGE_HTTP = "http://127.0.0.1:9000";
+
 const EVENT_BINDINGS = [
   {
     path: "lol-gameflow/v1/gameflow-phase",
@@ -34,9 +36,17 @@ export function registerLCUEventForwarders({ broadcast, logger = console } = {})
   const cleanups = EVENT_BINDINGS.map(({ path, transform }) =>
     subscribe(path, (payload) => {
       try {
-        if (typeof broadcast === "function") {
-          broadcast(transform(payload));
-        }
+        const event = transform(payload);
+
+        fetch(`${BRIDGE_HTTP}/event`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(event),
+        }).catch((error) => {
+          logger.warn("[Bloom] Bridge unreachable, event dropped:", error.message);
+        });
       } catch (error) {
         logger.warn(`[Bloom] Failed to forward ${path}.`, error);
       }

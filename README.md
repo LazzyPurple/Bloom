@@ -1,21 +1,33 @@
 # Bloom
 
-Bloom permet de piloter certaines actions du client League of Legends depuis une PWA mobile. Le runtime Pengu charge un plugin dans le client LoL, mais le transport reseau LAN vivra dans un bridge Node.js local.
+Bloom permet de piloter certaines actions du client League of Legends depuis une PWA mobile. Le runtime Pengu charge un plugin dans le client LoL, et un bridge Node.js local porte le transport entre le plugin et le reseau LAN.
 
 ## Monorepo
 
 - `bloom-plugin/` : plugin Pengu Loader dans le client LoL
-- `bloom-bridge/` : futur pont Node.js local entre Pengu et le LAN
+- `bloom-bridge/` : pont Node.js local entre Pengu et le LAN
 - `bloom-ui/` : interface mobile React 19 + TypeScript strict + Tailwind CSS v4
 
 ## Architecture actuelle
 
 - le plugin appelle le LCU avec `fetch('/lol-...')`
 - le plugin observe les events via `context.socket.observe(path, cb)`
-- le serveur WebSocket LAN n'est pas dans le plugin
-- le vrai transport LAN sera implemente dans `bloom-bridge/` en phase 2
+- le plugin POST les events au bridge sur `http://127.0.0.1:9000/event`
+- le plugin poll les commandes sur `http://127.0.0.1:9000/commands`
+- le bridge expose le WebSocket LAN sur `ws://IP_DU_PC:8765`
 
-## Lancement de l'UI
+## Lancement complet
+
+1. Demarrer League of Legends avec Pengu Loader.
+2. Lancer le bridge :
+
+```bash
+cd bloom-bridge
+npm install
+npm start
+```
+
+3. Lancer l'UI :
 
 ```bash
 cd bloom-ui
@@ -23,7 +35,9 @@ npm install
 npm run dev -- --host 0.0.0.0
 ```
 
-Pour un build de production :
+4. Sur le telephone : ouvrir `http://IP_DU_PC:5173`, saisir l'IP du PC, puis se connecter.
+
+## Build UI
 
 ```bash
 cd bloom-ui
@@ -32,4 +46,4 @@ npm run build
 
 ## Bridge local
 
-Le dossier `bloom-bridge/` est un scaffold uniquement pour l'instant. Ce sera le seul endroit autorise a ouvrir le port `8765`.
+Le dossier `bloom-bridge/` est le seul endroit autorise a ouvrir le port `8765`.
