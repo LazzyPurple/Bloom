@@ -2,13 +2,10 @@ import { registerLCUEventForwarders } from "./src/events.js";
 import { setLCUContext } from "./src/lcu.js";
 import { broadcast, createWSServer } from "./src/ws-server.js";
 
-let wsRuntime = null;
 let stopForwarders = () => {};
-let activeLogger = console;
 
 function handleCommand(command) {
   if (!command || typeof command !== "object") {
-    activeLogger.warn("[Bloom] Ignored invalid command payload.", command);
     return null;
   }
 
@@ -21,38 +18,24 @@ function handleCommand(command) {
     case "startSearch":
     case "stopSearch":
     case "lockChamp":
-      activeLogger.info(`[Bloom] Stub command received: ${command.cmd}`, command);
+      console.info("[Bloom] Stub cmd:", command.cmd, command);
       return { ok: true, stub: true };
     default:
-      activeLogger.warn(`[Bloom] Unknown WebSocket command: ${command.cmd ?? "unknown"}`, command);
+      console.warn("[Bloom] Unknown cmd:", command.cmd);
       return { ok: false, reason: "unknown-command" };
   }
 }
 
 export function init(context) {
-  activeLogger = context?.logger ?? console;
   setLCUContext(context);
-
   stopForwarders();
 
-  if (wsRuntime?.close) {
-    wsRuntime.close();
-  }
+  createWSServer({ onCommand: handleCommand });
+  stopForwarders = registerLCUEventForwarders({ broadcast });
 
-  wsRuntime = createWSServer({
-    logger: activeLogger,
-    onCommand: handleCommand,
-  });
-
-  stopForwarders = registerLCUEventForwarders({
-    broadcast,
-    logger: activeLogger,
-  });
-
-  activeLogger.info("[Bloom] init complete.");
-  return wsRuntime;
+  console.info("[Bloom] init complete. context.socket:", typeof context?.socket);
 }
 
 export function load() {
-  console.info("[Bloom] Bloom plugin scaffold loaded.");
+  console.info("[Bloom] Plugin loaded.");
 }

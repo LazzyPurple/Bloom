@@ -5,19 +5,27 @@ Bloom est un monorepo personnel pour piloter le client League of Legends a dista
 ## Vision
 
 - `bloom-plugin/` est un plugin Pengu Loader injecte dans le client LoL.
-- `bloom-ui/` est une PWA React mobile qui parle uniquement au plugin via WebSocket LAN.
-- Aucun serveur relay n'est autorise dans l'architecture.
+- `bloom-bridge/` sera un pont Node.js local entre le plugin et le reseau LAN.
+- `bloom-ui/` est une PWA React mobile qui parle uniquement au bridge via WebSocket LAN.
+- Aucun serveur relay distant n'est autorise dans l'architecture.
 
-## Architecture
+## Architecture reelle
 
 ### `bloom-plugin/`
 
 - JavaScript vanilla uniquement
 - Pas de bundler
 - Pas d'import ESM externe
-- Acces LCU via `fetch()`
-- Ecoute des events via `context.socket`
-- Expose le serveur WebSocket LAN sur le port `8765`
+- Acces LCU via `fetch()` relatif dans le runtime CEF
+- Ecoute des events via `context.socket.observe(path, cb)`
+- Ne peut pas ouvrir de port TCP ou WebSocket
+- Utilise `console.info/warn/error` directement
+
+### `bloom-bridge/`
+
+- Processus Node.js local
+- Sera le seul endroit autorise a ouvrir le port `8765`
+- Portera le transport entre plugin et UI en phase 2
 
 ### `bloom-ui/`
 
@@ -30,14 +38,15 @@ Bloom est un monorepo personnel pour piloter le client League of Legends a dista
 
 ## Regles strictes
 
-- L'UI ne doit jamais appeler le LCU directement.
+- `context.socket.observe(path, cb)` est la seule API valide pour les events LCU.
+- `context.logger` n'existe pas.
+- `globalThis.WebSocketServer` n'existe pas dans Pengu.
 - Tous les appels LCU passent par `bloom-plugin/src/lcu.js`.
-- Le serveur WebSocket doit vivre dans le plugin, jamais dans un process Node separe.
-- `WS_PORT = 8765` doit rester une constante dans `bloom-plugin/src/ws-server.js`.
-- Tailwind v4 doit etre configure dans `src/index.css` via `@theme`.
+- Le plugin JS CEF ne peut pas ouvrir de port reseau.
+- Le vrai serveur WebSocket vivra dans `bloom-bridge/`.
+- Tailwind v4 doit etre configure dans `bloom-ui/src/index.css` via `@theme`.
 - Pas de `tailwind.config.ts`.
 - Pas de `postcss.config.cjs`.
-- Le scaffold doit rester simple : pas de logique metier LCU tant que la phase 2 n'est pas ouverte.
 
 ## Protocol WebSocket
 
@@ -73,6 +82,11 @@ bloom/
       events.js
     package.json
 
+  bloom-bridge/
+    index.js
+    package.json
+    README.md
+
   bloom-ui/
     index.html
     public/
@@ -99,13 +113,12 @@ bloom/
 
 ## Phase actuelle
 
-Phase 1 - Scaffold complet from scratch.
+Phase 1.5 - Plugin realigne sur le runtime Pengu reel.
 
-- Refaire `bloom-ui/` avec Vite 7 + React 19 + Tailwind v4.
-- Le plugin doit exposer des interfaces et stubs propres.
-- L'UI doit compiler sans erreur TypeScript.
-- Le routage `/connect` vers `/home` doit etre pret.
-- Le manifeste PWA doit etre conforme a iOS standalone.
+- Le plugin utilise `context.socket.observe()` pour les events LCU.
+- `ws-server.js` reste en stub mode explicite.
+- `bloom-bridge/` existe comme scaffold, mais n'ouvre encore aucun port.
+- `bloom-ui/` ne change pas dans cette phase.
 
 ## Outils adjacents
 
@@ -113,9 +126,3 @@ Phase 1 - Scaffold complet from scratch.
 - LCU API : `https://lcu.kebs.dev`
 - Riot Client API : `https://riotclient.kebs.dev`
 - Rose : `https://github.com/Alban1911/Rose`
-
-## Notes de travail
-
-- Favoriser des stubs explicites et des logs utiles.
-- Garder les couches bien separees.
-- Toute extension future Rose doit passer par le plugin, jamais par l'UI directement.

@@ -1,0 +1,13 @@
+{
+  "name": "bloom-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local Bloom bridge between Pengu plugin and LAN WebSocket clients",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}

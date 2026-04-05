@@ -2,79 +2,43 @@ import { subscribe } from "./lcu.js";
 
 const EVENT_BINDINGS = [
   {
-    event: "OnJsonApiEvent_lol-gameflow_v1_gameflow-phase",
-    transform(payload) {
+    path: "lol-gameflow/v1/gameflow-phase",
+    transform(data) {
       return {
         type: "gameflow",
-        phase: extractGameflowPhase(payload),
+        phase: typeof data?.data === "string" ? data.data : "None",
       };
     },
   },
   {
-    event: "OnJsonApiEvent_lol-champ-select_v1_session",
-    transform(payload) {
+    path: "lol-champ-select/v1/session",
+    transform(data) {
       return {
         type: "champselect",
-        session: extractData(payload),
+        session: data?.data ?? null,
       };
     },
   },
   {
-    event: "OnJsonApiEvent_lol-matchmaking_v1_ready-check",
-    transform(payload) {
+    path: "lol-matchmaking/v1/ready-check",
+    transform(data) {
       return {
         type: "readycheck",
-        playerResponse: extractPlayerResponse(payload),
+        playerResponse: data?.data?.playerResponse ?? "None",
       };
     },
   },
 ];
 
-function extractData(payload) {
-  if (!payload || typeof payload !== "object") {
-    return payload ?? null;
-  }
-
-  if ("data" in payload) {
-    return payload.data;
-  }
-
-  return payload;
-}
-
-function extractGameflowPhase(payload) {
-  const data = extractData(payload);
-
-  if (typeof data === "string") {
-    return data;
-  }
-
-  if (data && typeof data === "object" && typeof data.phase === "string") {
-    return data.phase;
-  }
-
-  return "None";
-}
-
-function extractPlayerResponse(payload) {
-  const data = extractData(payload);
-
-  if (data && typeof data === "object" && typeof data.playerResponse === "string") {
-    return data.playerResponse;
-  }
-
-  return "None";
-}
-
 export function registerLCUEventForwarders({ broadcast, logger = console } = {}) {
-  const cleanups = EVENT_BINDINGS.map(({ event, transform }) =>
-    subscribe(event, (payload) => {
+  const cleanups = EVENT_BINDINGS.map(({ path, transform }) =>
+    subscribe(path, (payload) => {
       try {
         if (typeof broadcast === "function") {
           broadcast(transform(payload));
         }
       } catch (error) {
-        logger.warn(`[Bloom] Failed to forward ${event}.`, error);
+        logger.warn(`[Bloom] Failed to forward ${path}.`, error);
       }
     }),
   );
