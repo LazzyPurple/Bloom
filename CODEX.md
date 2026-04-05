@@ -21,9 +21,10 @@ Bloom est un monorepo personnel pour piloter le client League of Legends a dista
 
 ### `bloom-ui/`
 
-- React 18
+- Vite 7
+- React 19
 - TypeScript strict
-- Tailwind CSS v3 uniquement
+- Tailwind CSS v4 via `@tailwindcss/vite`
 - PWA installable iOS
 - Connexion directe vers `ws://IP_DU_PC:8765`
 
@@ -33,7 +34,10 @@ Bloom est un monorepo personnel pour piloter le client League of Legends a dista
 - Tous les appels LCU passent par `bloom-plugin/src/lcu.js`.
 - Le serveur WebSocket doit vivre dans le plugin, jamais dans un process Node separe.
 - `WS_PORT = 8765` doit rester une constante dans `bloom-plugin/src/ws-server.js`.
-- Le scaffold doit rester simple : pas de logique metier LCU tant que la phase 1 n'est pas ouverte.
+- Tailwind v4 doit etre configure dans `src/index.css` via `@theme`.
+- Pas de `tailwind.config.ts`.
+- Pas de `postcss.config.cjs`.
+- Le scaffold doit rester simple : pas de logique metier LCU tant que la phase 2 n'est pas ouverte.
 
 ## Protocol WebSocket
 
@@ -86,7 +90,6 @@ bloom/
       components/
         StatusBadge.tsx
     vite.config.ts
-    tailwind.config.ts
     tsconfig.json
     package.json
 
@@ -96,8 +99,9 @@ bloom/
 
 ## Phase actuelle
 
-Objectif : scaffold complet et fonctionnel.
+Phase 1 - Scaffold complet from scratch.
 
+- Refaire `bloom-ui/` avec Vite 7 + React 19 + Tailwind v4.
 - Le plugin doit exposer des interfaces et stubs propres.
 - L'UI doit compiler sans erreur TypeScript.
 - Le routage `/connect` vers `/home` doit etre pret.
@@ -113,5 +117,5 @@ Objectif : scaffold complet et fonctionnel.
 ## Notes de travail
 
 - Favoriser des stubs explicites et des logs utiles.
-- Garder les couches bien separees pour la phase 1.
+- Garder les couches bien separees.
 - Toute extension future Rose doit passer par le plugin, jamais par l'UI directement.

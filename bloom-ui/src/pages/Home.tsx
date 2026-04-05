@@ -13,7 +13,7 @@ const COMMANDS: Array<{ label: string; command: BloomCommand }> = [
   { label: "Create SoloQ Lobby", command: { cmd: "createLobby", queueId: 420 } },
   { label: "Start Search", command: { cmd: "startSearch" } },
   { label: "Stop Search", command: { cmd: "stopSearch" } },
-  { label: "Lock Yasuo", command: { cmd: "lockChamp", championId: 157 } },
+  { label: "Lock Yasuo", command: { cmd: "lockChamp", championId: 157 } }
 ];
 
 export default function Home({ disconnect, lastEvent, send, state }: HomeProps) {
@@ -22,7 +22,7 @@ export default function Home({ disconnect, lastEvent, send, state }: HomeProps) 
     : "No Bloom events received yet.";
 
   return (
-    <section className="w-full space-y-6 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-bloom-950/30 backdrop-blur">
+    <section className="w-full space-y-6 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-bloom-950/30 backdrop-blur-sm">
       <div className="space-y-3">
         <p className="text-sm uppercase tracking-[0.3em] text-bloom-200">Home</p>
         <h2 className="text-2xl font-semibold text-white">Scaffold control surface</h2>

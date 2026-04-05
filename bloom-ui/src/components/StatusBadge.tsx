@@ -18,9 +18,7 @@ const STYLES: Record<ConnectionState, string> = {
 
 export default function StatusBadge({ state }: StatusBadgeProps) {
   return (
-    <span
-      className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${STYLES[state]}`}
-    >
+    <span className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-medium ${STYLES[state]}`}>
       {LABELS[state]}
     </span>
   );

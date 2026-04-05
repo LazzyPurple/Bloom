@@ -10,8 +10,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <div className="min-h-screen bg-slate-950 text-slate-100">
-        <header className="border-b border-white/10 bg-slate-950/80 px-5 py-4 backdrop-blur">
-          <div className="mx-auto flex w-full max-w-md items-center justify-between">
+        <header className="border-b border-white/10 bg-slate-950/80 px-5 py-4 backdrop-blur-sm">
+          <div className="mx-auto flex w-full max-w-md items-center justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.3em] text-bloom-200">Bloom</p>
               <h1 className="text-lg font-semibold">League client remote</h1>

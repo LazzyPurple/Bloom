@@ -50,7 +50,6 @@ export function init(context) {
   });
 
   activeLogger.info("[Bloom] init complete.");
-
   return wsRuntime;
 }
 

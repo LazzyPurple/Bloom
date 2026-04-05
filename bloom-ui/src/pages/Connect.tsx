@@ -10,17 +10,17 @@ type ConnectProps = {
 
 const STORAGE_KEY = "bloom:last-ip";
 
+function getInitialIp() {
+  if (typeof window === "undefined") {
+    return "";
+  }
+
+  return window.localStorage.getItem(STORAGE_KEY) ?? "";
+}
+
 export default function Connect({ connect, state }: ConnectProps) {
   const navigate = useNavigate();
-  const [ip, setIp] = useState("");
-
-  useEffect(() => {
-    const savedIp = window.localStorage.getItem(STORAGE_KEY);
-
-    if (savedIp) {
-      setIp(savedIp);
-    }
-  }, []);
+  const [ip, setIp] = useState(getInitialIp);
 
   useEffect(() => {
     if (state === ConnectionState.Connected) {
@@ -40,7 +40,7 @@ export default function Connect({ connect, state }: ConnectProps) {
   }
 
   return (
-    <section className="w-full rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-bloom-950/30 backdrop-blur">
+    <section className="w-full rounded-3xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-bloom-950/30 backdrop-blur-sm">
       <div className="space-y-3">
         <p className="text-sm uppercase tracking-[0.3em] text-bloom-200">Connect</p>
         <h2 className="text-2xl font-semibold text-white">Link your phone to Bloom</h2>

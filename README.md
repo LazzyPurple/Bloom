@@ -5,13 +5,13 @@ Bloom permet de piloter certaines actions du client League of Legends depuis une
 ## Monorepo
 
 - `bloom-plugin/` : plugin Pengu Loader injecte dans le client LoL
-- `bloom-ui/` : interface mobile React + TypeScript + Tailwind CSS v3
+- `bloom-ui/` : interface mobile React 19 + TypeScript strict + Tailwind CSS v4
 
 ## Prerequis
 
 - Pengu Loader installe et fonctionnel
 - League of Legends lance sur le PC
-- Node.js 20+ pour l'UI
+- Node.js recent pour l'UI
 - Le PC et le telephone sur le meme reseau local
 
 ## Installation du plugin Pengu
@@ -52,7 +52,7 @@ npm run build
 
 ## Etat actuel
 
-Ce depot contient seulement le scaffold initial :
+Ce depot contient le scaffold initial de la nouvelle stack :
 
 - wrappers LCU
 - serveur WebSocket du plugin

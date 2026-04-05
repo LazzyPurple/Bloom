@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { startTransition, useEffect, useRef, useState } from "react";
 
 export enum ConnectionState {
   Disconnected = "Disconnected",
@@ -129,7 +129,9 @@ export function useBloomWS(): UseBloomWSResult {
         return;
       }
 
-      setLastEvent(parseEventPayload(event.data));
+      startTransition(() => {
+        setLastEvent(parseEventPayload(event.data));
+      });
     };
 
     return true;
