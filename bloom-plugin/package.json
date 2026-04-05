@@ -1,0 +1,10 @@
+{
+  "name": "bloom-plugin",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Pengu Loader scaffold for Bloom",
+  "scripts": {
+    "check": "node -e \"console.log('bloom-plugin scaffold ready')\""
+  }
+}
