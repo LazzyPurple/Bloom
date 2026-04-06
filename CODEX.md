@@ -56,13 +56,11 @@ Bloom est un monorepo personnel pour piloter le client League of Legends a dista
 { "type": "gameflow", "phase": "Lobby" }
 { "type": "champselect", "session": {} }
 { "type": "readycheck", "playerResponse": "None" }
-{ "type": "pong" }
 ```
 
 ### UI vers Plugin
 
 ```json
-{ "cmd": "ping" }
 { "cmd": "accept" }
 { "cmd": "createLobby", "queueId": 420 }
 { "cmd": "startSearch" }
@@ -126,3 +124,4 @@ Phase 1.5 - Plugin realigne sur le runtime Pengu reel.
 - LCU API : `https://lcu.kebs.dev`
 - Riot Client API : `https://riotclient.kebs.dev`
 - Rose : `https://github.com/Alban1911/Rose`
+

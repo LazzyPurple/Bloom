@@ -1,17 +1,17 @@
 # bloom-bridge
 
-`bloom-bridge/` est le futur pont Node.js entre le plugin Pengu et l'interface mobile Bloom.
+Pont Node.js local entre le plugin Pengu Loader et la PWA mobile Bloom.
 
 ## Role
 
-- exposer le vrai serveur WebSocket LAN sur le port `8765`
-- recevoir les evenements emis par le plugin Pengu
-- relayer les commandes de la PWA vers le plugin via un canal local a definir en phase 2
+- HTTP server sur `127.0.0.1:9000` : recoit les events du plugin (POST /event), sert les commandes au plugin (GET /commands)
+- WebSocket server sur `0.0.0.0:8765` : connexion LAN directe avec la PWA
 
-## Statut
+## Lancement
 
-Phase 1.5 : scaffold uniquement. Aucun serveur reseau n'est encore implemente ici.
+npm install
+npm start
 
 ## Regle importante
 
-Le bridge sera le seul endroit autorise a ouvrir un port reseau pour Bloom.
+Le bridge est le seul endroit autorise a ouvrir des ports reseau dans Bloom.

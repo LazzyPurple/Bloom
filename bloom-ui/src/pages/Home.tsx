@@ -8,7 +8,6 @@ type HomeProps = {
 };
 
 const COMMANDS: Array<{ label: string; command: BloomCommand }> = [
-  { label: "Ping", command: { cmd: "ping" } },
   { label: "Accept", command: { cmd: "accept" } },
   { label: "Create SoloQ Lobby", command: { cmd: "createLobby", queueId: 420 } },
   { label: "Start Search", command: { cmd: "startSearch" } },
@@ -44,6 +43,10 @@ export default function Home({ disconnect, lastEvent, send, state }: HomeProps) 
           </button>
         ))}
       </div>
+
+      {state === ConnectionState.Connecting ? (
+        <p className="text-xs text-amber-300">Reconnecting to bridge...</p>
+      ) : null}
 
       <div className="rounded-2xl border border-white/10 bg-slate-950/80 p-4">
         <p className="mb-3 text-xs uppercase tracking-[0.3em] text-slate-400">Last event</p>

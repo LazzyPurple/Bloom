@@ -1,5 +1,8 @@
 import { startTransition, useEffect, useRef, useState } from "react";
 
+const INITIAL_RECONNECT_DELAY_MS = 1000;
+const MAX_RECONNECT_DELAY_MS = 30000;
+
 export enum ConnectionState {
   Disconnected = "Disconnected",
   Connecting = "Connecting",
@@ -7,14 +10,13 @@ export enum ConnectionState {
 }
 
 export type BloomEvent =
+  | { type: "bridge_ready" }
   | { type: "gameflow"; phase: string }
   | { type: "champselect"; session: unknown }
   | { type: "readycheck"; playerResponse: string }
-  | { type: "pong" }
   | { type: "unknown"; raw: unknown };
 
 export type BloomCommand =
-  | { cmd: "ping" }
   | { cmd: "accept" }
   | { cmd: "createLobby"; queueId: number }
   | { cmd: "startSearch" }
@@ -67,25 +69,51 @@ function parseEventPayload(payload: string): BloomEvent {
 
 export function useBloomWS(): UseBloomWSResult {
   const socketRef = useRef<WebSocket | null>(null);
+  const reconnectTimeoutRef = useRef<number | null>(null);
+  const currentIpRef = useRef("");
+  const intentionalDisconnectRef = useRef(false);
+  const reconnectDelayRef = useRef(INITIAL_RECONNECT_DELAY_MS);
   const [state, setState] = useState(ConnectionState.Disconnected);
   const [lastEvent, setLastEvent] = useState<BloomEvent | null>(null);
 
-  function disconnect() {
-    const socket = socketRef.current;
-    socketRef.current = null;
-
-    if (socket) {
-      socket.onopen = null;
-      socket.onclose = null;
-      socket.onerror = null;
-      socket.onmessage = null;
-      socket.close();
+  function clearReconnectTimer() {
+    if (reconnectTimeoutRef.current !== null) {
+      window.clearTimeout(reconnectTimeoutRef.current);
+      reconnectTimeoutRef.current = null;
     }
-
-    setState(ConnectionState.Disconnected);
   }
 
-  function connect(ip: string) {
+  function disposeSocket(socket: WebSocket | null) {
+    if (!socket) {
+      return;
+    }
+
+    socket.onopen = null;
+    socket.onclose = null;
+    socket.onerror = null;
+    socket.onmessage = null;
+    socket.close();
+  }
+
+  function scheduleReconnect() {
+    clearReconnectTimer();
+
+    if (intentionalDisconnectRef.current || !currentIpRef.current) {
+      setState(ConnectionState.Disconnected);
+      return;
+    }
+
+    const delay = reconnectDelayRef.current;
+    reconnectDelayRef.current = Math.min(delay * 2, MAX_RECONNECT_DELAY_MS);
+
+    setState(ConnectionState.Connecting);
+    reconnectTimeoutRef.current = window.setTimeout(() => {
+      reconnectTimeoutRef.current = null;
+      openSocket(currentIpRef.current);
+    }, delay);
+  }
+
+  function openSocket(ip: string) {
     const url = buildSocketUrl(ip);
 
     if (!url) {
@@ -93,19 +121,21 @@ export function useBloomWS(): UseBloomWSResult {
       return false;
     }
 
-    if (socketRef.current) {
-      disconnect();
-    }
-
-    setState(ConnectionState.Connecting);
+    currentIpRef.current = ip.trim();
+    clearReconnectTimer();
+    disposeSocket(socketRef.current);
 
     const socket = new WebSocket(url);
     socketRef.current = socket;
+    setState(ConnectionState.Connecting);
 
     socket.onopen = () => {
-      if (socketRef.current === socket) {
-        setState(ConnectionState.Connected);
+      if (socketRef.current !== socket) {
+        return;
       }
+
+      reconnectDelayRef.current = INITIAL_RECONNECT_DELAY_MS;
+      setState(ConnectionState.Connected);
     };
 
     socket.onclose = () => {
@@ -113,15 +143,18 @@ export function useBloomWS(): UseBloomWSResult {
         socketRef.current = null;
       }
 
-      setState(ConnectionState.Disconnected);
+      if (intentionalDisconnectRef.current) {
+        setState(ConnectionState.Disconnected);
+        return;
+      }
+
+      scheduleReconnect();
     };
 
     socket.onerror = () => {
-      if (socketRef.current === socket) {
-        socketRef.current = null;
+      if (socketRef.current === socket && socket.readyState !== WebSocket.CLOSED) {
+        socket.close();
       }
-
-      setState(ConnectionState.Disconnected);
     };
 
     socket.onmessage = (event) => {
@@ -137,6 +170,24 @@ export function useBloomWS(): UseBloomWSResult {
     return true;
   }
 
+  function connect(ip: string) {
+    intentionalDisconnectRef.current = false;
+    reconnectDelayRef.current = INITIAL_RECONNECT_DELAY_MS;
+    return openSocket(ip);
+  }
+
+  function disconnect() {
+    intentionalDisconnectRef.current = true;
+    currentIpRef.current = "";
+    reconnectDelayRef.current = INITIAL_RECONNECT_DELAY_MS;
+    clearReconnectTimer();
+
+    const socket = socketRef.current;
+    socketRef.current = null;
+    disposeSocket(socket);
+    setState(ConnectionState.Disconnected);
+  }
+
   function send(command: BloomCommand) {
     const socket = socketRef.current;
 
@@ -150,7 +201,10 @@ export function useBloomWS(): UseBloomWSResult {
 
   useEffect(() => {
     return () => {
-      disconnect();
+      intentionalDisconnectRef.current = true;
+      clearReconnectTimer();
+      disposeSocket(socketRef.current);
+      socketRef.current = null;
     };
   }, []);
 

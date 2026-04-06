@@ -1,3 +1,4 @@
+import QRCode from "qrcode";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import StatusBadge from "../components/StatusBadge";
@@ -21,12 +22,43 @@ function getInitialIp() {
 export default function Connect({ connect, state }: ConnectProps) {
   const navigate = useNavigate();
   const [ip, setIp] = useState(getInitialIp);
+  const [qrCodeUrl, setQrCodeUrl] = useState("");
 
   useEffect(() => {
     if (state === ConnectionState.Connected) {
       navigate("/home", { replace: true });
     }
   }, [navigate, state]);
+
+  useEffect(() => {
+    const cleanedIp = ip.trim();
+
+    if (!cleanedIp) {
+      setQrCodeUrl("");
+      return;
+    }
+
+    let cancelled = false;
+
+    QRCode.toDataURL(`http://${cleanedIp}:5173`, {
+      width: 160,
+      margin: 1,
+    })
+      .then((dataUrl) => {
+        if (!cancelled) {
+          setQrCodeUrl(dataUrl);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setQrCodeUrl("");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [ip]);
 
   function handleConnect() {
     const cleanedIp = ip.trim();
@@ -67,6 +99,19 @@ export default function Connect({ connect, state }: ConnectProps) {
         onChange={(event) => setIp(event.target.value)}
         className="mt-2 w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-base text-white outline-none transition focus:border-bloom-400 focus:ring-2 focus:ring-bloom-400/40"
       />
+
+      {qrCodeUrl ? (
+        <div className="mt-6 flex flex-col items-center gap-3">
+          <p className="text-xs text-slate-400">Scan to open on mobile</p>
+          <img
+            src={qrCodeUrl}
+            alt={`QR code to open Bloom on ${ip.trim()}`}
+            width={160}
+            height={160}
+            className="rounded-2xl border border-white/10 bg-white p-2"
+          />
+        </div>
+      ) : null}
 
       <button
         type="button"

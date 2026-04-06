@@ -30,7 +30,7 @@ export default function App() {
             <Route
               path="/home"
               element={
-                bloom.state === ConnectionState.Connected ? (
+                bloom.state !== ConnectionState.Disconnected ? (
                   <Home
                     disconnect={bloom.disconnect}
                     lastEvent={bloom.lastEvent}

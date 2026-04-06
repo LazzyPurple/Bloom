@@ -1,6 +1,6 @@
 import { registerLCUEventForwarders } from "./src/events.js";
 import { setLCUContext } from "./src/lcu.js";
-import { broadcast, createWSServer } from "./src/ws-server.js";
+import { createWSServer } from "./src/ws-server.js";
 
 const BRIDGE_HTTP = "http://127.0.0.1:9000";
 const POLL_INTERVAL_MS = 500;
@@ -14,9 +14,6 @@ function handleCommand(command) {
   }
 
   switch (command.cmd) {
-    case "ping":
-      broadcast({ type: "pong" });
-      return { ok: true };
     case "accept":
     case "createLobby":
     case "startSearch":
@@ -72,7 +69,7 @@ export function init(context) {
 
   createWSServer({ onCommand: handleCommand });
   startCommandPolling();
-  stopForwarders = registerLCUEventForwarders({ broadcast });
+  stopForwarders = registerLCUEventForwarders();
 
   console.info("[Bloom] init complete. context.socket:", typeof context?.socket);
 }
